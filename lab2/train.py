@@ -5,7 +5,7 @@ import numpy as np
 from torchvision.datasets import MNIST
 
 import nn
-import layers
+from lab2.lab2 import layers
 
 DATA_DIR = Path(__file__).parent / 'datasets' / 'MNIST'
 SAVE_DIR = Path(__file__).parent / 'out'

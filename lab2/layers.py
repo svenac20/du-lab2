@@ -234,10 +234,10 @@ class FC(Layer):
 
 class ReLU(Layer):
 	def __init__(self, input_layer, name):
+		self.inputs = None
 		self.shape = input_layer.shape
 		self.name = name
 		self.has_params = False
-		self.inputs = None
 
 	def forward(self, inputs):
 		"""
@@ -248,7 +248,7 @@ class ReLU(Layer):
 		"""
 
 		self.inputs = inputs
-		out = np.max(inputs, 0)
+		out = np.maximum(inputs, 0)
 
 		return out
 

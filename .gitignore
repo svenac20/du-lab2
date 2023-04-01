@@ -1,1 +1,4 @@
 *.pyc
+lab2/datasets
+lab2/build
+lab2/out

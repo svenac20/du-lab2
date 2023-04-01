@@ -14,7 +14,7 @@ config = {}
 config['max_epochs'] = 8
 config['batch_size'] = 50
 config['save_dir'] = SAVE_DIR
-config['weight_decay'] = 1e-3
+config['weight_decay'] = 1e-1
 config['lr_policy'] = {1:{'lr':1e-1}, 3:{'lr':1e-2}, 5:{'lr':1e-3}, 7:{'lr':1e-4}}
 
 def dense_to_one_hot(y, class_count):
@@ -24,11 +24,11 @@ def dense_to_one_hot(y, class_count):
 np.random.seed(int(time.time() * 1e6) % 2**31)
 
 ds_train, ds_test = MNIST(DATA_DIR, train=True, download=True), MNIST(DATA_DIR, train=False)
-train_x = ds_train.data.reshape([-1, 1, 28, 28]).numpy().astype(np.float) / 255
+train_x = ds_train.data.reshape([-1, 1, 28, 28]).numpy().astype(np.float64) / 255
 train_y = ds_train.targets.numpy()
 train_x, valid_x = train_x[:55000], train_x[55000:]
 train_y, valid_y = train_y[:55000], train_y[55000:]
-test_x = ds_test.data.reshape([-1, 1, 28, 28]).numpy().astype(np.float) / 255
+test_x = ds_test.data.reshape([-1, 1, 28, 28]).numpy().astype(np.float64) / 255
 test_y = ds_test.targets.numpy()
 train_mean = train_x.mean()
 train_x, valid_x, test_x = (x - train_mean for x in (train_x, valid_x, test_x))
@@ -58,3 +58,38 @@ loss = layers.RegularizedLoss(data_loss, regularizers)
 
 nn.train(train_x, train_y, valid_x, valid_y, net, loss, config)
 nn.evaluate("Test", test_x, test_y, net, loss, config)
+
+# weight_decay = 1e-3
+# Train accuracy = 99.46
+#
+# Running evaluation:  Validation
+#   Validation accuracy = 99.08
+#   Validation avg loss = 12.77
+#
+#
+# Running evaluation:  Test
+#   Test accuracy = 99.09
+#   Test avg loss = 12.62
+
+# weight_decay = 1e-2
+# Train accuracy = 98.78
+# Running evaluation:  Validation
+#   Validation accuracy = 98.88
+#   Validation avg loss = 9.82
+#
+#
+# Running evaluation:  Test
+#   Test accuracy = 98.80
+#   Test avg loss = 9.72
+
+# weight_decay = 1e-1
+#Train accuracy = 96.37
+
+# Running evaluation:  Validation
+# Validation accuracy = 97.26
+# Validation avg loss = 7.30
+#
+#
+# Running evaluation:  Test
+# Test accuracy = 96.71
+# Test avg loss = 7.23

@@ -5,7 +5,7 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
-
+import matplotlib.pyplot as plt
 from pathlib import Path
 
 
@@ -58,18 +58,26 @@ class ConvolutionalModel(nn.Module):
 
 		return logits
 
-	def train(self, train, validation, number_of_epochs=1, weight_decay=1e-3, delta=0.1):
+	def get_loss_for_validation_loader(self, validation_loader):
+		loss_fn = torch.nn.CrossEntropyLoss()
+
+		loss_per_batch = torch.zeros(len(validation_loader))
+		for index, (x, y) in enumerate(validation_loader):
+			out = self.forward(x)
+			loss = loss_fn(out, y)
+
+			loss_per_batch[index] = loss
+
+		return torch.mean(loss_per_batch)
+
+	def train(self, train, validation, number_of_epochs=8, weight_decay=1e-3, delta=0.1):
 		optimizer = torch.optim.SGD(params=self.parameters(), weight_decay=weight_decay, lr=delta)
 
 		loss_fn = torch.nn.CrossEntropyLoss()
 
-		writer = SummaryWriter()
-
-		for i in range(number_of_epochs):
-			losses_for_epoch = []
-
+		losses_for_epoch = []
+		for i in range(1, number_of_epochs + 1):
 			for x, y in train:
-				print(y.shape)
 				out = self.forward(x)
 
 				loss = loss_fn(out, y)
@@ -78,6 +86,13 @@ class ConvolutionalModel(nn.Module):
 				optimizer.step()
 				optimizer.zero_grad()
 
+			validation_loss = self.get_loss_for_validation_loader(validation)
+			print(f"Loss for epoch number - {i+1} : {validation_loss.item()}")
+			losses_for_epoch.append(validation_loss.item())
+
+		plt.plot(range(1, number_of_epochs + 1), losses_for_epoch)
+		plt.title("Validation loss through epochs")
+		plt.show()
 
 DATA_DIR = Path(__file__).parent / 'datasets' / 'MNIST'
 
@@ -101,6 +116,6 @@ if __name__ == '__main__':
 
 	train_loader, validation_loader, test_loader = get_MNIST_dataset(batch_size)
 
-	conv_model = ConvolutionalModel(in_channels=1, conv1_width=16, max_pool1_kernel_size=2, conv2_out=32, max_pool2_kernel_size=2, fc1_width=512, class_count=10)
+	conv_model = ConvolutionalModel(in_channels=1, conv1_width=16, max_pool1_kernel_size=2, conv2_out=32,
+									max_pool2_kernel_size=2, fc1_width=512, class_count=10)
 	conv_model.train(train_loader, validation_loader)
-

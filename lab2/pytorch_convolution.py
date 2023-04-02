@@ -68,11 +68,12 @@ class ConvolutionalModel(nn.Module):
 
 			loss_per_batch[index] = loss
 
-		return torch.mean(loss_per_batch)
+		return torch.mean(loss_per_batch).item()
 
 	def train(self, train, validation, number_of_epochs=8, weight_decay=1e-3, delta=0.1):
 		optimizer = torch.optim.SGD(params=self.parameters(), weight_decay=weight_decay, lr=delta)
 
+		writer = SummaryWriter()
 		loss_fn = torch.nn.CrossEntropyLoss()
 
 		losses_for_epoch = []
@@ -87,8 +88,12 @@ class ConvolutionalModel(nn.Module):
 				optimizer.zero_grad()
 
 			validation_loss = self.get_loss_for_validation_loader(validation)
-			print(f"Loss for epoch number - {i+1} : {validation_loss.item()}")
-			losses_for_epoch.append(validation_loss.item())
+
+			writer.add_scalar("Validation loss", round(validation_loss, 5), i)
+			print(f"Loss for epoch number - {i} : {validation_loss}")
+			losses_for_epoch.append(validation_loss)
+
+		writer.close()
 
 		plt.plot(range(1, number_of_epochs + 1), losses_for_epoch)
 		plt.title("Validation loss through epochs")
